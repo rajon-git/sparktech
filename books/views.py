@@ -3,14 +3,15 @@ from .models import Book, Borrow, Author, Category
 from . serializers import BookSerializer, AuthorSerializer, CategorySerializer
 
 # Create your views here.
-class GetBookViews(generics.RetrieveAPIView):
+class BookListCreateView(generics.ListCreateAPIView):
+    serializer_class = BookSerializer
     queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    lookup_field  = 'id'
 
-class GetBookListViews(generics.ListAPIView):
-    serializer_class = BookSerializer
-    
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()] 
+
     def get_queryset(self):
         queryset = Book.objects.all()
         author_id = self.request.query_params.get('author')
@@ -22,29 +23,29 @@ class GetBookListViews(generics.ListAPIView):
             queryset = queryset.filter(category_id=category_id)
         return queryset
     
-class BookCreateView(generics.CreateAPIView):
+class BookRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-class BookUpdateView(generics.UpdateAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    permission_classes = [permissions.IsAdminUser]
     lookup_field = 'id'
 
-class BookDeleteView(generics.DestroyAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    permission_classes = [permissions.IsAdminUser]
-    lookup_field = 'id'
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
 
 class AuthorListCreateView(generics.ListCreateAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-    permission_classes = [permissions.IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method in ['POST']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAdminUser]
+    def get_permissions(self):
+        if self.request.method in ['POST']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]

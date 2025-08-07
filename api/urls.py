@@ -11,16 +11,10 @@ urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name='login'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # books api for all users
-    path('books/<int:id>/', book_views.GetBookViews.as_view(), name='book_detail'),
-    path('books/', book_views.GetBookListViews.as_view(), name='all_books'),
+    path('books/', book_views.BookListCreateView.as_view(), name='book-create-list'),
+    path('books/<int:id>/', book_views.BookRetrieveUpdateDeleteView.as_view(), name='book-read-update-delete'),
 
-    # books api for only admin
-    path('api/books/', book_views.BookCreateView.as_view(), name='book-create'),
-    path('api/books/<int:id>/', book_views.BookUpdateView.as_view(), name='book-update'),
-    path('api/books/<int:id>/', book_views.BookDeleteView.as_view(), name='book-delete'),
-
-    path('api/authors/', book_views.AuthorListCreateView.as_view(), name='authors-create-delete'),
-    path('api/categories/', book_views.CategoryListCreateView.as_view(), name='categories-create-delete'),
+    path('authors/', book_views.AuthorListCreateView.as_view(), name='authors-create-delete'),
+    path('categories/', book_views.CategoryListCreateView.as_view(), name='categories-create-delete'),
 ] 
 
