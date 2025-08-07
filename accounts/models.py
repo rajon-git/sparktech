@@ -51,6 +51,7 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete= models.CASCADE)
     phone = models.CharField(max_length=11, blank= True)
     bio = models.TextField(blank=True)
+    penalty_points = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
