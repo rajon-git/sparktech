@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
-from .models import Book, Borrow
-from . serializers import BookSerializer
+from .models import Book, Borrow, Author, Category
+from . serializers import BookSerializer, AuthorSerializer, CategorySerializer
 
 # Create your views here.
 class GetBookViews(generics.RetrieveAPIView):
@@ -38,3 +38,13 @@ class BookDeleteView(generics.DestroyAPIView):
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAdminUser]
     lookup_field = 'id'
+
+class AuthorListCreateView(generics.ListCreateAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+class CategoryListCreateView(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminUser]

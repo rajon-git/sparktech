@@ -19,5 +19,8 @@ urlpatterns = [
     path('api/books/', book_views.BookCreateView.as_view(), name='book-create'),
     path('api/books/<int:id>/', book_views.BookUpdateView.as_view(), name='book-update'),
     path('api/books/<int:id>/', book_views.BookDeleteView.as_view(), name='book-delete'),
+
+    path('api/authors/', book_views.AuthorListCreateView.as_view(), name='authors-create-delete'),
+    path('api/categories/', book_views.CategoryListCreateView.as_view(), name='categories-create-delete'),
 ] 
 
