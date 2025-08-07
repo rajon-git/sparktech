@@ -11,4 +11,4 @@ class GetBookViews(generics.RetrieveAPIView):
 class GetBookListViews(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAdminUser]
