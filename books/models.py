@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from datetime import timedelta
 
 # Create your models here.
 class Author(models.Model):

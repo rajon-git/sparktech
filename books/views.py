@@ -25,7 +25,6 @@ class BookListCreateView(generics.ListCreateAPIView):
         queryset = Book.objects.all()
         author_id = self.request.query_params.get('author')
         category_id = self.request.query_params.get('category')
-
         if author_id:
             queryset = queryset.filter(author_id=author_id)
         if category_id:
@@ -36,7 +35,6 @@ class BookRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     lookup_field = 'id'
-
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH', 'DELETE']:
             return [permissions.IsAdminUser()]
@@ -45,7 +43,6 @@ class BookRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 class AuthorListCreateView(generics.ListCreateAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-
     def get_permissions(self):
         if self.request.method in ['POST']:
             return [permissions.IsAdminUser()]
@@ -62,21 +59,16 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 class BorrowListCreateView(generics.ListCreateAPIView):
     serializer_class = BorrowSerializer
     permission_classes = [permissions.IsAuthenticated]
-
     def get_queryset(self):
         return Borrow.objects.filter(user=self.request.user, return_date__isnull=True)
-
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user = request.user
         book_id = request.data.get('book_id')
-
         print(f"<-----{user}------>")
         print(f"<-----{book_id}------>")
-
         if not book_id:
             return Response({'book field is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         active_borrows = Borrow.objects.filter(user=user, return_date__isnull=True).count()
         if active_borrows >= 3:
             return Response({'You have reached the limit'}, status=status.HTTP_400_BAD_REQUEST)
@@ -84,19 +76,15 @@ class BorrowListCreateView(generics.ListCreateAPIView):
             book = Book.objects.select_for_update().get(id=book_id)
         except Book.DoesNotExist:
             return Response({'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
-
         if book.available_copies < 1:
             return Response({'This book is not available.'}, status=status.HTTP_400_BAD_REQUEST)
-
         book.available_copies -= 1
         book.save()
-
         borrow = Borrow.objects.create(
             user=user,
             book=book,
             due_date=timezone.now().date() + timezone.timedelta(days=14)
         )
-
         serializer = self.get_serializer(borrow)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -107,15 +95,12 @@ class ReturnBookView(UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         borrow_id = request.data.get('borrow_id')
-
         if not borrow_id:
             return Response({"borrow_id required."}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             borrow = self.queryset.get(id=borrow_id)
         except self.queryset.model.DoesNotExist:
             return Response({"Borrow record not found."}, status=status.HTTP_404_NOT_FOUND)
-                
         if borrow.return_date:
             return Response({"Book already returned."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -123,17 +108,14 @@ class ReturnBookView(UpdateAPIView):
             today = timezone.now().date()
             borrow.return_date = today
             borrow.save()
-
             borrow.book.available_copies += 1
             borrow.book.save()
-
             late_days = 0
             if today > borrow.due_date:
                 late_days = (today - borrow.due_date).days
                 profile = Profile.objects.get(user=borrow.user)
                 profile.penalty_points += late_days
                 profile.save()
-
         return Response({
             "message": "Book returned successfully.",
             "total_penalty_points": profile.penalty_points if late_days else 0
@@ -144,7 +126,6 @@ class UserPenaltyPointsView(APIView):
         if self.request.user.is_staff:
             return [permissions.AllowAny()] 
         return [permissions.IsAuthenticated()]
-
     def get(self, request, id):
         user = User.objects.get(id=id)
         if request.user != user and not request.user.is_staff:
