@@ -3,14 +3,11 @@ from .models import Book, Borrow, Author, Category
 from . serializers import BookSerializer, AuthorSerializer, CategorySerializer, BorrowSerializer, ReturnBookSerializer
 from rest_framework.response import Response
 from django.db import transaction
-from rest_framework.permissions import IsAuthenticated
-from datetime import timedelta
 from django.utils import timezone
 from rest_framework.generics import UpdateAPIView
 from accounts.models import Profile
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -78,18 +75,18 @@ class BorrowListCreateView(generics.ListCreateAPIView):
         print(f"<-----{book_id}------>")
 
         if not book_id:
-            return Response({'error': 'book field is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'book field is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         active_borrows = Borrow.objects.filter(user=user, return_date__isnull=True).count()
         if active_borrows >= 3:
-            return Response({'error': 'You have reached the borrowing limit of 3 active books.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'You have reached the limit'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             book = Book.objects.select_for_update().get(id=book_id)
         except Book.DoesNotExist:
-            return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         if book.available_copies < 1:
-            return Response({'error': 'This book is currently not available.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'This book is not available.'}, status=status.HTTP_400_BAD_REQUEST)
 
         book.available_copies -= 1
         book.save()
@@ -112,15 +109,15 @@ class ReturnBookView(UpdateAPIView):
         borrow_id = request.data.get('borrow_id')
 
         if not borrow_id:
-            return Response({"error": "borrow_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"borrow_id required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             borrow = self.queryset.get(id=borrow_id)
-        except Borrow.DoesNotExist:
-            return Response({"error": "Borrow record not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        except self.queryset.model.DoesNotExist:
+            return Response({"Borrow record not found."}, status=status.HTTP_404_NOT_FOUND)
+                
         if borrow.return_date:
-            return Response({"message": "Book already returned."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Book already returned."}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
             today = timezone.now().date()
@@ -139,9 +136,6 @@ class ReturnBookView(UpdateAPIView):
 
         return Response({
             "message": "Book returned successfully.",
-            "return_date": today,
-            "late_days": late_days,
-            "penalty_added": late_days,
             "total_penalty_points": profile.penalty_points if late_days else 0
         }, status=status.HTTP_200_OK)
     
@@ -152,9 +146,7 @@ class UserPenaltyPointsView(APIView):
         return [permissions.IsAuthenticated()]
 
     def get(self, request, id):
-        user = get_object_or_404(User, id=id)
-        
+        user = User.objects.get(id=id)
         if request.user != user and not request.user.is_staff:
-            return Response({'detail': 'Not authorized.'}, status=status.HTTP_403_FORBIDDEN)
-
+            return Response({'Not authorized.'}, status=status.HTTP_403_FORBIDDEN)
         return Response({'penalty_points': user.profile.penalty_points})
