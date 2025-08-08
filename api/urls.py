@@ -14,7 +14,11 @@ urlpatterns = [
     path('books/', book_views.BookListCreateView.as_view(), name='book-create-list'),
     path('books/<int:id>/', book_views.BookRetrieveUpdateDeleteView.as_view(), name='book-read-update-delete'),
 
-    path('authors/', book_views.AuthorListCreateView.as_view(), name='authors-create-delete'),
-    path('categories/', book_views.CategoryListCreateView.as_view(), name='categories-create-delete'),
+    path('authors/', book_views.AuthorListCreateView.as_view(), name='authors-create-list'),
+    path('categories/', book_views.CategoryListCreateView.as_view(), name='categories-create-list'),
+
+    path('borrow/', book_views.BorrowListCreateView.as_view(), name='borrow-create-list'),
+    path('return/', book_views.ReturnBookView.as_view(), name='book-return'),
+    path('users/<int:id>/penalties/', book_views.UserPenaltyPointsView.as_view(), name='user-penalties'),
 ] 
 

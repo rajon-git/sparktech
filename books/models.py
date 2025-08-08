@@ -34,7 +34,5 @@ class Borrow(models.Model):
     due_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.due_date:
-            self.due_date = self.return_date + timedelta(days=14)
-        super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.book.title} borrow in {self.borrow_date}"

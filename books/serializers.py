@@ -33,8 +33,15 @@ class BookSerializer(serializers.ModelSerializer):
 class BorrowSerializer(serializers.ModelSerializer):
     book = BookSerializer(read_only=True)
 
+    book_id = serializers.PrimaryKeyRelatedField( queryset=Book.objects.all(),
+        source='book', write_only=True
+    )
+
     class Meta:
         model = Borrow
         fields = '__all__'
+
+class ReturnBookSerializer(serializers.Serializer):
+    borrow_id = serializers.IntegerField()
 
 
